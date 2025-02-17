@@ -3,35 +3,67 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstdlib>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <cstdio>
 
 using namespace std;
 
-int main(int argc, char** argv) {
-    if (argc != 2) return EXIT_FAILURE;
+//Shared memory clock structure
 
-    int SysClockS = atoi(argv[1]);
-    int SysclockNano = atoi(argv[1]);
-    int TermTimeS = atoi(argv[1]);
-    int TermTimeNano = atoi(argv[1]);
-	
-//Start the for loop to display the user pid, the parent pid and iterations.      
-    for (int i = 1; i <= ; ++i) {
+struct ClockDigi{
+	int sysClocks;
+	int sysClockNano;
+	int yermTimeS;
+	int termTimeNano;
+};
 
-//Will display user pid and parent pid before sleeping and then after sleeping 	    
-        cout << "WORKER PID:" 
-		<< getpid() 
-		<< " PPID:" 
-		<< getppid() 
-		<<" SysClockS:" 
-		<< SC
-		<< "SysclockNano:"
-		<< SCN
-		<<"TermTimeS:"
-		<< TTS
-		<<"TermTimeNano:"
-		<< TTN ;
+//logic for shared memory
+//
+//
+//
 
+
+//start capturing
+
+int startCount = clockDigi->sysClocks;
+
+cout << "WORKER PID:" << getpid()
+         << " PPID:" << getppid()
+         << " SysClockS:" << clockData->sysClockS
+         << " SysclockNano:" << clockData->sysClockNano
+         << " TermTimeS:" << clockData->termTimeS
+         << " TermTimeNano:" << clockData->termTimeNano << "\n";
+         cout << "--Just Starting" << "\n";
+
+//checks
+    while (clockData->sysClockS < startSeconds + 1) {
     }
+
+    cout << "WORKER PID:" << getpid()
+         << " PPID:" << getppid()
+         << " SysClockS:" << clockData->sysClockS
+         << " SysclockNano:" << clockData->sysClockNano
+         << " TermTimeS:" << clockData->termTimeS
+         << " TermTimeNano:" << clockData->termTimeNano << "\n";
+    cout << "--1 seconds have passed since starting" << "\n";
+
+
+    //checks
+    while (clockData->sysClockS < clockData->termTimeS) {
+         }
+  
+    cout << "WORKER PID:" << getpid()
+         << " PPID:" << getppid()
+         << " SysClockS:" << clockData->sysClockS
+         << " SysclockNano:" << clockData->sysClockNano
+         << " TermTimeS:" << clockData->termTimeS
+         << " TermTimeNano:" << clockData->termTimeNano << "\n";
+    cout << "--Terminating" << "\n";
+
+    
+    shmdt(clockData);
 
     return EXIT_SUCCESS;
 }
+
