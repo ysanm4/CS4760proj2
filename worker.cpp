@@ -32,12 +32,7 @@ int Nanoval = atoi(argv[2]);
 
 //shared memory key
 
-const char* ftokPath = "/tmp";
-key_t key = ftok(ftokPath, 'R');
-if(key == -1){
-perror("ftok");
-return EXIT_FAILURE;
-}
+key_t key = 6321;
 
 //access to shared memory
 
