@@ -1,4 +1,6 @@
 //Written by Yosef Alqufidi
+//Date 2/27/25
+//updated my code from proj1
 
 #include <iostream>
 #include <unistd.h>
@@ -64,7 +66,7 @@ if(termNano >= 1000000000){
 }
 
 //outputs
-
+//...........................................................................................
 cout << "WORKER PID:" << getpid()
          << " PPID:" << getppid()
          << " SysClockS:" << clockData->sysClockS
@@ -73,9 +75,17 @@ cout << "WORKER PID:" << getpid()
          << " TermTimeNano:" << clockData->termTimeNano << "\n";
          cout << "--Just Starting" << "\n";
 
-//checks
+//checks and busy wait
   
+	 int FinprSec = stRdSec;
+	 int contnu = 0;
+while (true){
+	int curr_Sec = clockVal->sysClockS;
+	int curr_Nano = clockVal->sysClockNano;
 
+
+if(curr_Sec > FinprSec && curr_Sec < termSec){
+	contnu = curr_Sec - stRdSec;
     cout << "WORKER PID:" << getpid()
          << " PPID:" << getppid()
          << " SysClockS:" << clockData->sysClockS
@@ -83,11 +93,11 @@ cout << "WORKER PID:" << getpid()
          << " TermTimeS:" << clockData->termTimeS
          << " TermTimeNano:" << clockData->termTimeNano << "\n";
     cout << " seconds have passed since starting" << "\n";
+}
 
-
-    //checks
+    //checks to term or not
    
-  
+if(curr_Sec > termSec || (curr_Sec == termSec && curr_Nano >= termNano)){  
     cout << "WORKER PID:" << getpid()
          << " PPID:" << getppid()
          << " SysClockS:" << clockData->sysClockS
@@ -95,7 +105,8 @@ cout << "WORKER PID:" << getpid()
          << " TermTimeS:" << clockData->termTimeS
          << " TermTimeNano:" << clockData->termTimeNano << "\n";
     cout << "--Terminating" << "\n";
-
+	}
+}
     
     shmdt(clockVal);
 

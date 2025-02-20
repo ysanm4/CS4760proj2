@@ -135,4 +135,23 @@ clockVal = (ClockDigi*) shmat(shmid, nullptr, 0);
 		perror("shmat");
 		return EXIT_FAILURE;
 	}
+//lets initialize the clock
+
+clockVal->sysClockS = 0;
+clockVal->sysClockNano = 0;
+
+//lets now initialize the process table
+
+for(int i = 0; i < PROCESS_TABLE; i++){
+	processTable[i].occupied = 0;
+	processTable[i].pid = 0;
+	processTable[i].startSeconds = 0;
+	processTable[i].startNano = 0;
+}
+
+//signal handlers
+
+signal(SIGALRM, signal_handler);
+signal(SIGINT, signal_handler);
+alarm(60);
 
