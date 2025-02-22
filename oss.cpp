@@ -1,9 +1,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
-#include <csignal>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <cstring>
+#include <csignal>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <ctime>
 #include <string>
 
 using namespace std;
@@ -154,4 +158,99 @@ for(int i = 0; i < PROCESS_TABLE; i++){
 signal(SIGALRM, signal_handler);
 signal(SIGINT, signal_handler);
 alarm(60);
+srand(time(NULL));
+
+int laun = 0;
+int runn = 0;
+
+int Finprsec = clockVal->sysClockS;
+int Finprnano = clockVal->sysClockNano;
+
+int FinlaunSec = clockVal->sysClockS;
+int FinlaunNano = clockVal->sysClockNano;
+
+int launIntN = i_case * 1000000;
+
+while(laun < n_case || runn > 0){
+	clockVal->sysClockNano += 1000000;
+	if(clockVal->sysClockNano >= 1000000000){
+		clockVal->sysClockS += clockVal->sysClockNano / 1000000000;
+		clockVal->sysClockNano %= 1000000000;
+	}
+
+	long long lastPrintTotal = (long long)Finprsec * 1000000000LL + Finprnano;
+	long long currentTotal = (long long)clockVal->sysClockS * 1000000000LL + clockVal->sysClockNano;
+	if(currentTotal - lastPrintTotal >= 500000000){
+		cout<<"oss PID:"<< getpid()
+			<<"SysClockS:"<< clockVal->sysClockS
+			<<"SysClockNano:"<< clockVal->sysClockNano << "\n";
+		cout<<"Process Table:\n";
+		cout<<"Entry\tOccupied\tPID\tStartS\tStartN\n";
+		for(int i = 0; i < PROCESS_TABLE; i++){
+			cout<< i << "\t" << processTable[i].occupied
+				<< "\t\t" << processTable[i].pid
+				<< "\t" << processTable[i].startSeconds
+				<< "\t" << processTable[i].startNano << "\n";
+		}
+		cout<<"incrementing the clock\n\n";
+		Finprsec = clockVal->sysClockS;
+		Finprnano = clockVal->sysClockNano;
+	}
+
+	int status;
+	pid_t finished;
+	while((finished = waitpid(-1, &status, WNOHANG)) > 0){
+		for(int i = 0; i < PROCESS_TABLE; i++){
+			if(processTable[i].occupied && processTable[i].pid == finished){
+				processTable[i].occupied = 0;
+				processTable[i].pid = 0;
+				processTable[i].startSeconds = 0;
+				processTable[i].startNano = 0;
+				runn--;
+				break;
+			}
+		}
+	}
+
+	long long lastLaunchTotal = (long long)FinlaunSec * 1000000000LL + FinlaunNano;
+	if((currentTotal - lastLaunchTotal >= launIntN) &&
+			(laun < n_case) && (runn < s_case)){
+		int childOffsetSec = (rand() % t_case) + 1;
+		int childOffsetNano = rand() % 1000000000;
+
+		pid_t pid = fork();
+		if(pid < 0){
+			cout<<"fork failed\n";
+			signal_handler(SIGALRM);
+		}else if (pid == 0){
+			string secStr = to_string(childOffsetSec);
+			string nanoStr = to_string(childOffsetNano);
+			execlp("./worker", "worker", secStr.c_str(), nanoStr.c_str(), (char*)NULL);
+			cout<<"exec failed\n";
+			exit(EXIT_FAILURE);
+		}else{
+			for(int i = 0; i < PROCESS_TABLE; i++){
+				if(!processTable[i].occupied){
+					processTable[i].occupied = 1;
+					processTable[i].pid = pid;
+					processTable[i].startSeconds = clockVal->sysClockS;
+					processTable[i].startNano = clockVal->sysClockNano;
+					break;
+				}
+			}
+			laun++;
+			runn++;
+			FinlaunSec = clockVal->sysClockS;
+			FinlaunNano = clockVal->sysClockNano;
+
+		}
+	}
+}
+
+shmdt(clockVal);
+shmctl(shmid, IPC_RMID, NULL);
+
+return EXIT_SUCCESS;
+
+}
 

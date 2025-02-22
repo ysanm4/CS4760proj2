@@ -14,7 +14,7 @@ using namespace std;
 //Shared memory clock structure
 
 struct ClockDigi{
-	int sysClocks;
+	int sysClockS;
 	int sysClockNano;
 };
 
@@ -22,7 +22,7 @@ struct ClockDigi{
 
 int main(int argc, char** argv){
 	if(argc !=3){
-		cout<<"Error please use three arguments for:"<< argv[0] <<"\n";
+		cout<<"Error please use two arguments for:"<< argv[0] <<"\n";
 		return EXIT_FAILURE;
 	}
 
@@ -69,30 +69,30 @@ if(termNano >= 1000000000){
 //...........................................................................................
 cout << "WORKER PID:" << getpid()
          << " PPID:" << getppid()
-         << " SysClockS:" << clockData->sysClockS
-         << " SysclockNano:" << clockData->sysClockNano
-         << " TermTimeS:" << clockData->termTimeS
-         << " TermTimeNano:" << clockData->termTimeNano << "\n";
+         << " SysClockS:" << clockVal->sysClockS
+         << " SysclockNano:" << clockVal->sysClockNano
+         << " TermTimeS:" << termSec
+         << " TermTimeNano:" << termNano << "\n";
          cout << "--Just Starting" << "\n";
 
 //checks and busy wait
   
-	 int FinprSec = stRdSec;
-	 int contnu = 0;
+	 int lastPrintedSec = stRdSec;
 while (true){
 	int curr_Sec = clockVal->sysClockS;
 	int curr_Nano = clockVal->sysClockNano;
 
 
-if(curr_Sec > FinprSec && curr_Sec < termSec){
-	contnu = curr_Sec - stRdSec;
+if(curr_Sec > lastPrintedSec && curr_Sec < termSec){
+	int contnu = curr_Sec - stRdSec;
     cout << "WORKER PID:" << getpid()
          << " PPID:" << getppid()
-         << " SysClockS:" << clockData->sysClockS
-         << " SysclockNano:" << clockData->sysClockNano
-         << " TermTimeS:" << clockData->termTimeS
-         << " TermTimeNano:" << clockData->termTimeNano << "\n";
-    cout << " seconds have passed since starting" << "\n";
+         << " SysClockS:" << clockVal->sysClockS
+         << " SysclockNano:" << clockVal->sysClockNano
+         << " TermTimeS:" << termSec
+         << " TermTimeNano:" << termNano << "\n";
+    cout << "--" << contnu << " seconds have passed since starting" << "\n";
+    lastPrintedSec = curr_Sec;
 }
 
     //checks to term or not
@@ -100,11 +100,12 @@ if(curr_Sec > FinprSec && curr_Sec < termSec){
 if(curr_Sec > termSec || (curr_Sec == termSec && curr_Nano >= termNano)){  
     cout << "WORKER PID:" << getpid()
          << " PPID:" << getppid()
-         << " SysClockS:" << clockData->sysClockS
-         << " SysclockNano:" << clockData->sysClockNano
-         << " TermTimeS:" << clockData->termTimeS
-         << " TermTimeNano:" << clockData->termTimeNano << "\n";
+         << " SysClockS:" << clockVal->sysClockS
+         << " SysclockNano:" << clockVal->sysClockNano
+         << " TermTimeS:" << termSec
+         << " TermTimeNano:" << termNano << "\n";
     cout << "--Terminating" << "\n";
+    break;
 	}
 }
     
