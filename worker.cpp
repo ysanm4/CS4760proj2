@@ -1,6 +1,6 @@
 //Written by Yosef Alqufidi
-//Date 2/27/25
-//updated my code from proj1
+//Date 3/3/25
+//updated from project 1
 
 #include <iostream>
 #include <unistd.h>
@@ -67,13 +67,13 @@ if(termNano >= 1000000000){
 
 //outputs
 //...........................................................................................
-cout << "WORKER PID:" << getpid()
-         << " PPID:" << getppid()
-         << " SysClockS:" << clockVal->sysClockS
-         << " SysclockNano:" << clockVal->sysClockNano
-         << " TermTimeS:" << termSec
-         << " TermTimeNano:" << termNano << "\n";
-         cout << "--Just Starting" << "\n";
+cout << "WORKER PID: " << getpid()
+         << " PPID: " << getppid()
+         << " SysClockS: " << clockVal->sysClockS
+         << " SysclockNano: " << clockVal->sysClockNano
+         << " TermTimeS: " << termSec
+         << " TermTimeNano: " << termNano << "\n";
+         cout << "JUST STARTING" << "\n";
 
 //checks and busy wait
   
@@ -85,26 +85,26 @@ while (true){
 
 if(curr_Sec > lastPrintedSec && curr_Sec < termSec){
 	int contnu = curr_Sec - stRdSec;
-    cout << "WORKER PID:" << getpid()
-         << " PPID:" << getppid()
-         << " SysClockS:" << clockVal->sysClockS
-         << " SysclockNano:" << clockVal->sysClockNano
-         << " TermTimeS:" << termSec
-         << " TermTimeNano:" << termNano << "\n";
-    cout << "--" << contnu << " seconds have passed since starting" << "\n";
+    cout << "WORKER PID: " << getpid()
+         << " PPID: " << getppid()
+         << " SysClockS: " << clockVal->sysClockS
+         << " SysclockNano: " << clockVal->sysClockNano
+         << " TermTimeS: " << termSec
+         << " TermTimeNano: " << termNano << "\n";
+    cout << contnu << " seconds have passed since starting" << "\n";
     lastPrintedSec = curr_Sec;
 }
 
     //checks to term or not
    
 if(curr_Sec > termSec || (curr_Sec == termSec && curr_Nano >= termNano)){  
-    cout << "WORKER PID:" << getpid()
-         << " PPID:" << getppid()
-         << " SysClockS:" << clockVal->sysClockS
-         << " SysclockNano:" << clockVal->sysClockNano
-         << " TermTimeS:" << termSec
-         << " TermTimeNano:" << termNano << "\n";
-    cout << "--Terminating" << "\n";
+    cout << "WORKER PID: " << getpid()
+         << " PPID: " << getppid()
+         << " SysClockS: " << clockVal->sysClockS
+         << " SysclockNano: " << clockVal->sysClockNano
+         << " TermTimeS: " << termSec
+         << " TermTimeNano: " << termNano << "\n";
+    cout << "TERMINATING" << "\n";
     break;
 	}
 }

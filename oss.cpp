@@ -1,3 +1,8 @@
+//Written by Yosef Alqufidi
+//Date 3/3/25
+//updated from project 1
+
+
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
@@ -34,10 +39,6 @@ int shmid;
 ClockDigi* clockVal = nullptr;
 
 
-
-
-
-
 void signal_handler(int sig) {
     // code to send kill signal to all children based on their PIDs in process table
 for(int i = 0; i < PROCESS_TABLE; i++){
@@ -53,20 +54,6 @@ shmctl(shmid, IPC_RMID, NULL);
     exit(1);
 }
 
-//int main() {
-    // Turn on alarm handler
-   // signal(SIGALRM, signal_handler);
-
-    // Set up the alarm call (fires in 60 seconds)
-   // alarm(60);
-
-    // Optionally, wait indefinitely so that the process remains active until the signal occurs.
-   // while (true) {
-  //      pause();  // Suspends the process until a signal is caught
-   // }
-
-  //  return 0;
-//}
 
 //adding command line args for parse
 int main( int argc, char *argv[]){
@@ -87,7 +74,7 @@ int main( int argc, char *argv[]){
 			cout<< "-n: processes\n";
 			cout<< "-s: simultaneous\n";
 			cout<< "-t: iterations\n";
-			cout<< "To run try ./oss -n 1 -s 1 -t 1\n";
+			cout<< "To run try ./oss -n 1 -s 1 -t 1 -i 100\n";
 
 	return EXIT_SUCCESS;
 
@@ -124,7 +111,7 @@ int main( int argc, char *argv[]){
 			return EXIT_FAILURE;
 	}
 
-//shared memory for clock
+//shared memory for clock using key to verify
 
 key_t key = 6321;
 
@@ -153,26 +140,31 @@ for(int i = 0; i < PROCESS_TABLE; i++){
 	processTable[i].startNano = 0;
 }
 
-//signal handlers
+//signal and alarm to terminate after 60 real life seconds
 
 signal(SIGALRM, signal_handler);
 signal(SIGINT, signal_handler);
 alarm(60);
 srand(time(NULL));
 
+//launched
 int laun = 0;
+//running
 int runn = 0;
 
+//tracking final printing 
 int Finprsec = clockVal->sysClockS;
 int Finprnano = clockVal->sysClockNano;
 
+//trackinh final launched
 int FinlaunSec = clockVal->sysClockS;
 int FinlaunNano = clockVal->sysClockNano;
 
-int launIntN = i_case * 1000000;
+//clock simulation -----------------------------------------------------------------------------------------------------------------
+int launIntN = i_case * 10000000;
 
 while(laun < n_case || runn > 0){
-	clockVal->sysClockNano += 1000000;
+	clockVal->sysClockNano += 10000000;
 	if(clockVal->sysClockNano >= 1000000000){
 		clockVal->sysClockS += clockVal->sysClockNano / 1000000000;
 		clockVal->sysClockNano %= 1000000000;
@@ -181,22 +173,22 @@ while(laun < n_case || runn > 0){
 	long long lastPrintTotal = (long long)Finprsec * 1000000000LL + Finprnano;
 	long long currentTotal = (long long)clockVal->sysClockS * 1000000000LL + clockVal->sysClockNano;
 	if(currentTotal - lastPrintTotal >= 500000000){
-		cout<<"oss PID:"<< getpid()
-			<<"SysClockS:"<< clockVal->sysClockS
-			<<"SysClockNano:"<< clockVal->sysClockNano << "\n";
-		cout<<"Process Table:\n";
+		cout<<"OSS PID: " << getpid() <<"SysClockS: " << clockVal->sysClockS <<"SysClockNano: " << clockVal->sysClockNano << "\n";
+
+
+		cout<<"Process Table:------------------------------------------------------------------------------------------\n";
 		cout<<"Entry\tOccupied\tPID\tStartS\tStartN\n";
 		for(int i = 0; i < PROCESS_TABLE; i++){
-			cout<< i << "\t" << processTable[i].occupied
-				<< "\t\t" << processTable[i].pid
-				<< "\t" << processTable[i].startSeconds
-				<< "\t" << processTable[i].startNano << "\n";
+		cout<< i << "\t" << processTable[i].occupied
+		<< "\t\t" << processTable[i].pid
+		<< "\t" << processTable[i].startSeconds
+		<< "\t" << processTable[i].startNano << "\n";
 		}
-		cout<<"incrementing the clock\n\n";
 		Finprsec = clockVal->sysClockS;
 		Finprnano = clockVal->sysClockNano;
 	}
-
+//-----------------------------------------------------------------------------------------------------------------------------------
+//check if children terminated with a non-blocking wait	
 	int status;
 	pid_t finished;
 	while((finished = waitpid(-1, &status, WNOHANG)) > 0){
@@ -212,23 +204,28 @@ while(laun < n_case || runn > 0){
 		}
 	}
 
-	long long lastLaunchTotal = (long long)FinlaunSec * 1000000000LL + FinlaunNano;
+	long long lastLaunchTotal = 
+		(long long)FinlaunSec * 1000000000LL + FinlaunNano;
 	if((currentTotal - lastLaunchTotal >= launIntN) &&
 			(laun < n_case) && (runn < s_case)){
 		int childOffsetSec = (rand() % t_case) + 1;
 		int childOffsetNano = rand() % 1000000000;
 
+//fork and exec the worker		
 		pid_t pid = fork();
 		if(pid < 0){
 			cout<<"fork failed\n";
 			signal_handler(SIGALRM);
-		}else if (pid == 0){
+		}else if 
+			(pid == 0){
 			string secStr = to_string(childOffsetSec);
 			string nanoStr = to_string(childOffsetNano);
 			execlp("./worker", "worker", secStr.c_str(), nanoStr.c_str(), (char*)NULL);
 			cout<<"exec failed\n";
 			exit(EXIT_FAILURE);
 		}else{
+	
+//update the process table			
 			for(int i = 0; i < PROCESS_TABLE; i++){
 				if(!processTable[i].occupied){
 					processTable[i].occupied = 1;
